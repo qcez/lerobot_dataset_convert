@@ -449,6 +449,19 @@ info = {
 with open(os.path.join(meta_dir, "info.json"), 'w') as f:
     json.dump(info, f, indent=4)
 
+# ========================= meta/task.jsonl =========================
+print("\n写入 meta/task.jsonl ...")
+
+task_jsonl_path = os.path.join(meta_dir, "task.jsonl")
+
+task_list = [
+    {"task_index": 0,"task_name": "fold the cloth"}
+    #...
+]
+with open(task_jsonl_path, 'w') as f:
+    for task in task_list:
+        f.write(json.dumps(task_list) + "\n")
+print("tasks.jsonl 写入完成，共 {} 条任务。".format(len(task_list)))
 # ========================= 其他 meta =========================
 episode_df = pd.DataFrame(episode_meta_rows)
 episode_table = pa.Table.from_pandas(episode_df, preserve_index=False)
