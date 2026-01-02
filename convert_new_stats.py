@@ -202,14 +202,14 @@ for hdf5_file in tqdm(hdf5_files, desc="总进度"):
                 ], dtype=np.float32)
 
                 row = {
-                    "observation.state": state.tolist(),
-                    "action": action[frame_idx].tolist(),
-                    "timestamp": [float(time_stamp[frame_idx] - episode_start_time)],
-                    "time_stamp": [float(time_stamp[frame_idx] + global_time_offset)],
-                    "frame_index": [frame_idx],
-                    "episode_index": [episode_index],
-                    "index": [global_index],
-                    "task_index": [task_index]
+                    "observation.state": state,  # np.array (96,) float32 → 自动存 list<float32>
+                    "action": action[frame_idx].astype(np.float32),  # (14,) float32
+                    "timestamp": float(time_stamp[frame_idx] - episode_start_time),  # scalar float
+                    "time_stamp": float(time_stamp[frame_idx]),  # scalar float
+                    "frame_index": np.int64(frame_idx),
+                    "episode_index": np.int64(episode_index),
+                    "index": np.int64(global_index),
+                    "task_index": np.int64(task_index)
                 }
                 current_data_rows.append(row)
 
