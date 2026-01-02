@@ -204,8 +204,8 @@ for hdf5_file in tqdm(hdf5_files, desc="总进度"):
                 row = {
                     "observation.state": state,  # np.array (96,) float32 → 自动存 list<float32>
                     "action": action[frame_idx].astype(np.float32),  # (14,) float32
-                    "timestamp": float(time_stamp[frame_idx] - episode_start_time),  # scalar float
-                    "time_stamp": float(time_stamp[frame_idx]),  # scalar float
+                    "timestamp": np.float32(time_stamp[frame_idx] - episode_start_time),
+                    "time_stamp": np.float32(time_stamp[frame_idx]),
                     "frame_index": np.int64(frame_idx),
                     "episode_index": np.int64(episode_index),
                     "index": np.int64(global_index),
