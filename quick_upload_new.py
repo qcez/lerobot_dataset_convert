@@ -2,6 +2,8 @@ from huggingface_hub import HfApi, create_repo, login, logout
 import os
 import sys
 import subprocess
+import re
+from tqdm import tqdm
 
 # === 关键修改：启用 hf-mirror 镜像（中国大陆加速） ===
 # 在任何 huggingface_hub 操作之前设置
@@ -76,12 +78,38 @@ def quick_upload():
     ]
 
     try:
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        print(result.stdout)
+        # result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        # print(result.stdout)
+        
+        # Use Popen to stream output in real-time. Parse percentage-like lines to update a tqdm bar.
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+        progress = None
+        for line in proc.stdout:
+            # Print output live so the user sees CLI messages immediately
+            print(line, end="")
+            # Try to extract a percentage (e.g., ' 45%') and update a progress bar
+            m = re.search(r"(\d{1,3})%", line)
+            if m:
+                pct = int(m.group(1))
+                if progress is None:
+                    progress = tqdm(total=100, desc="Upload", unit="%")
+                    progress.update(pct)
+                else:
+                    # Set to current percentage and refresh
+                    progress.n = pct
+                    progress.refresh()
+        ret = proc.wait()
+        if progress is not None:
+            progress.close()
+        if ret != 0:
+            raise subprocess.CalledProcessError(ret, cmd)
+        
+        
         print("\n✅ CLI 上传成功完成！")
     except subprocess.CalledProcessError as e:
         print("\nCLI 上传失败:", e)
-        print("stderr:", e.stderr)
+        # print("stderr:", e.stderr)
+        # If we have captured output above, it has already been printed line-by-line.
         print("\n回退到 Python API upload_folder...")
         
         # 回退方案：使用 api.upload_folder
